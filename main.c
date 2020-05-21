@@ -45,7 +45,7 @@ int main(int argc, char** argv) {
     char* f_name = argv[1];
 
     // index array via ascii of char, value is its count
-    int char_count[255] = {0}; 
+    int char_count[256] = {0}; 
 
     FILE* f_ptr = fopen(f_name, "rb");
     if (f_ptr == NULL) {
