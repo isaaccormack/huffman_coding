@@ -5,21 +5,21 @@
 #define CHARSET_SIZE 256
 
 // Heres what I had in mind, doesn't effect any code I've written so feel free to change
-struct Node
+typedef struct Node
 {
     struct Node *left;
     struct Node *right;
     int count;
     char c;
-};
+} Node;
 
-void enqueue(struct Node *queue[], int *queue_length, struct Node *node)
+void enqueue(Node *queue[], int *queue_length, Node *node)
 {
     queue[*queue_length] = node;
     (*queue_length)++;
 }
 
-struct Node *dequeue(struct Node *queue[], int *queue_length)
+Node *dequeue(Node *queue[], int *queue_length)
 {
     int min = 0;
     int i = 0;
@@ -30,14 +30,14 @@ struct Node *dequeue(struct Node *queue[], int *queue_length)
             min = i;
         }
     }
-    struct Node *min_node = queue[min];
+    Node *min_node = queue[min];
 
     queue[min] = queue[*queue_length - 1];
     (*queue_length)--;
     return min_node;
 }
 
-void get_encoding(struct Node *node, int encoding_arr[], int encoding_len)
+void get_encoding(Node *node, int encoding_arr[], int encoding_len)
 {
     if (node->c)
     {
@@ -160,7 +160,7 @@ int main(int argc, char **argv)
 
     // test_char_count(char_count); // uncomment to test char count
 
-    struct Node *priority_queue[CHARSET_SIZE];
+    Node *priority_queue[CHARSET_SIZE];
 
     int i = 0;
     int queue_length = 0;
@@ -168,7 +168,7 @@ int main(int argc, char **argv)
     {
         if (char_count[i] > 0)
         {
-            priority_queue[queue_length] = (struct Node *)malloc(sizeof(struct Node));
+            priority_queue[queue_length] = (Node *)malloc(sizeof(Node));
             priority_queue[queue_length]->count = char_count[i];
             priority_queue[queue_length]->c = i;
             priority_queue[queue_length]->left = 0;
@@ -180,16 +180,16 @@ int main(int argc, char **argv)
 
     while (queue_length > 1)
     {
-        struct Node *left_node = dequeue(priority_queue, &queue_length);
-        struct Node *right_node = dequeue(priority_queue, &queue_length);
-        struct Node *new_node = (struct Node *)malloc(sizeof(struct Node));
+        Node *left_node = dequeue(priority_queue, &queue_length);
+        Node *right_node = dequeue(priority_queue, &queue_length);
+        Node *new_node = (Node *)malloc(sizeof(Node));
         new_node->count = left_node->count + right_node->count;
         new_node->left = left_node;
         new_node->right = right_node;
         enqueue(priority_queue, &queue_length, new_node);
     }
 
-    struct Node *root = dequeue(priority_queue, &queue_length);
+    Node *root = dequeue(priority_queue, &queue_length);
     int arr[CHARSET_SIZE] = {};
     get_encoding(root, arr, 0);
 }
