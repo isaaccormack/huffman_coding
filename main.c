@@ -37,30 +37,31 @@ Node *dequeue(Node *queue[], int *queue_length)
     return min_node;
 }
 
-void get_encoding(Node *node, int encoding_arr[], int encoding_len)
+void get_encoding(Node *node, int bit_array[], int array_len, char *encoding[])
 {
     if (node->c)
     {
-        printf("'%c'(%d): ", node->c, node->count);
+        encoding[node->c] = (char *)malloc(sizeof(char) * array_len);
+
         int i = 0;
-        while (i < encoding_len)
+        char bit;
+        while (i < array_len)
         {
-            printf("%d", encoding_arr[i]);
+            sprintf(&encoding[node->c][i], "%d", bit_array[i]);
             i++;
         }
-        printf("\n");
         return;
     }
     if (node->left)
     {
-        encoding_arr[encoding_len] = 0;
-        get_encoding(node->left, encoding_arr, encoding_len + 1);
+        bit_array[array_len] = 0;
+        get_encoding(node->left, bit_array, array_len + 1, encoding);
     }
 
     if (node->right)
     {
-        encoding_arr[encoding_len] = 1;
-        get_encoding(node->right, encoding_arr, encoding_len + 1);
+        bit_array[array_len] = 1;
+        get_encoding(node->right, bit_array, array_len + 1, encoding);
     }
     return;
 }
@@ -87,6 +88,21 @@ void test_char_count(int char_count[])
         i++;
     }
     printf("-----TOTAL CHARACTERS: %d", total);
+}
+
+void test_encoding(char *encoding[])
+{
+    int i = 0;
+    while (i < CHARSET_SIZE)
+    {
+        if (encoding[i] != 0)
+        {
+            printf("'%c': ", (char)i);
+            printf("%s", encoding[i]);
+            printf("\n");
+        }
+        i++;
+    }
 }
 
 int main(int argc, char **argv)
@@ -191,5 +207,8 @@ int main(int argc, char **argv)
 
     Node *root = dequeue(priority_queue, &queue_length);
     int arr[CHARSET_SIZE] = {};
-    get_encoding(root, arr, 0);
+    char *encoding[CHARSET_SIZE] = {};
+    get_encoding(root, arr, 0, encoding);
+
+    test_encoding(encoding);
 }
