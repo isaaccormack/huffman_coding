@@ -13,40 +13,56 @@ struct Node
     char c;
 };
 
-void enqueue(struct Node queue[], int *queue_length, struct Node node)
+void enqueue(struct Node *queue[], int *queue_length, struct Node *node)
 {
     queue[*queue_length] = node;
     (*queue_length)++;
 }
 
-struct Node dequeue(struct Node queue[], int *queue_length)
+struct Node *dequeue(struct Node *queue[], int *queue_length)
 {
     int min = 0;
     int i = 0;
     for (i = 0; i < *queue_length; i++)
     {
-        if (queue[i].count < queue[min].count)
+        if (queue[i]->count < queue[min]->count)
         {
             min = i;
         }
     }
-    struct Node min_node = queue[min];
+    struct Node *min_node = queue[min];
 
     queue[min] = queue[*queue_length - 1];
     (*queue_length)--;
     return min_node;
 }
 
-void print_queue(struct Node queue[], int queue_length)
+void get_encoding(struct Node *node, int encoding_arr[], int encoding_len)
 {
-    printf("Q len %d\n", queue_length);
-
-    int i = 0;
-    while (i < queue_length)
+    if (node->c)
     {
-        printf("%c %d\n", queue[i].c, queue[i].count);
-        i++;
+        printf("'%c'(%d): ", node->c, node->count);
+        int i = 0;
+        while (i < encoding_len)
+        {
+            printf("%d", encoding_arr[i]);
+            i++;
+        }
+        printf("\n");
+        return;
     }
+    if (node->left)
+    {
+        encoding_arr[encoding_len] = 0;
+        get_encoding(node->left, encoding_arr, encoding_len + 1);
+    }
+
+    if (node->right)
+    {
+        encoding_arr[encoding_len] = 1;
+        get_encoding(node->right, encoding_arr, encoding_len + 1);
+    }
+    return;
 }
 
 // used in conjunction with test_char_count.sh
@@ -144,10 +160,7 @@ int main(int argc, char **argv)
 
     // test_char_count(char_count); // uncomment to test char count
 
-    // -------------------------------
-    // Create Priority Queue
-
-    struct Node priority_queue[CHARSET_SIZE];
+    struct Node *priority_queue[CHARSET_SIZE];
 
     int i = 0;
     int queue_length = 0;
@@ -155,26 +168,28 @@ int main(int argc, char **argv)
     {
         if (char_count[i] > 0)
         {
-            priority_queue[queue_length].count = char_count[i];
-            priority_queue[queue_length].c = i;
+            priority_queue[queue_length] = (struct Node *)malloc(sizeof(struct Node));
+            priority_queue[queue_length]->count = char_count[i];
+            priority_queue[queue_length]->c = i;
+            priority_queue[queue_length]->left = 0;
+            priority_queue[queue_length]->right = 0;
             queue_length++;
         }
         i++;
     }
 
-    print_queue(priority_queue, queue_length);
-
     while (queue_length > 1)
     {
-        struct Node left_node = dequeue(priority_queue, &queue_length);
-        struct Node right_node = dequeue(priority_queue, &queue_length);
-        struct Node new_node;
-        new_node.count = left_node.count + right_node.count;
-        new_node.left = &left_node;
-        new_node.right = &right_node;
+        struct Node *left_node = dequeue(priority_queue, &queue_length);
+        struct Node *right_node = dequeue(priority_queue, &queue_length);
+        struct Node *new_node = (struct Node *)malloc(sizeof(struct Node));
+        new_node->count = left_node->count + right_node->count;
+        new_node->left = left_node;
+        new_node->right = right_node;
         enqueue(priority_queue, &queue_length, new_node);
     }
 
-    struct Node root = dequeue(priority_queue, &queue_length);
-    print_queue(priority_queue, queue_length);
+    struct Node *root = dequeue(priority_queue, &queue_length);
+    int arr[CHARSET_SIZE] = {};
+    get_encoding(root, arr, 0);
 }
