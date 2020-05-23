@@ -13,36 +13,43 @@ typedef struct Node
     char c;
 } Node;
 
+// add node to end of priority queue
 void enqueue(Node *queue[], int *queue_length, Node *node)
 {
     queue[*queue_length] = node;
     (*queue_length)++;
 }
 
+// pop min node
 Node *dequeue(Node *queue[], int *queue_length)
 {
+    // find index of node with lowest count and lowest ASCII value
     int min = 0;
     int i = 0;
     for (i = 0; i < *queue_length; i++)
     {
-        if (queue[i]->count < queue[min]->count)
+        if (queue[i]->count < queue[min]->count || (queue[i]->count == queue[min]->count && queue[i]->c < queue[min]->c))
         {
             min = i;
         }
     }
     Node *min_node = queue[min];
 
+    // replace popped node with node at end
     queue[min] = queue[*queue_length - 1];
     (*queue_length)--;
     return min_node;
 }
 
+// traverse through huffman tree building <char,encoding> map
 void get_encoding(Node *node, int bit_array[], int array_len, char *encoding[])
 {
+    // If a node has a char value, then it is a leaf node
     if (node->c)
     {
         encoding[node->c] = (char *)malloc(sizeof(char) * array_len);
 
+        // convert int array into string
         int i = 0;
         char bit;
         while (i < array_len)
@@ -52,6 +59,7 @@ void get_encoding(Node *node, int bit_array[], int array_len, char *encoding[])
         }
         return;
     }
+
     if (node->left)
     {
         bit_array[array_len] = 0;
@@ -176,8 +184,8 @@ int main(int argc, char **argv)
 
     // test_char_count(char_count); // uncomment to test char count
 
+    // add nodes to priority queue
     Node *priority_queue[CHARSET_SIZE];
-
     int i = 0;
     int queue_length = 0;
     while (i < CHARSET_SIZE)
@@ -194,21 +202,30 @@ int main(int argc, char **argv)
         i++;
     }
 
+    // while there is at least 2 node left in queue, loop
     while (queue_length > 1)
     {
+        // pop top 2 nodes
         Node *left_node = dequeue(priority_queue, &queue_length);
         Node *right_node = dequeue(priority_queue, &queue_length);
+
+        // create new node, set children as popped nodes
         Node *new_node = (Node *)malloc(sizeof(Node));
         new_node->count = left_node->count + right_node->count;
         new_node->left = left_node;
         new_node->right = right_node;
+
+        // enqueue new node
         enqueue(priority_queue, &queue_length, new_node);
     }
 
+    // last node is root
     Node *root = dequeue(priority_queue, &queue_length);
-    int arr[CHARSET_SIZE] = {};
+    int bit_array[CHARSET_SIZE] = {};
     char *encoding[CHARSET_SIZE] = {};
-    get_encoding(root, arr, 0, encoding);
 
-    test_encoding(encoding);
+    // traverse tree, get encoding
+    get_encoding(root, bit_array, 0, encoding);
+
+    // test_encoding(encoding); // uncomment to test encoding
 }
