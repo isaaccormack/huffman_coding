@@ -28,7 +28,10 @@ Node *dequeue(Node *queue[], int *queue_length)
     int i = 0;
     for (i = 0; i < *queue_length; i++)
     {
-        if (queue[i]->count < queue[min]->count || (queue[i]->count == queue[min]->count && queue[i]->c < queue[min]->c))
+        if (queue[i]->count < queue[min]->count ||
+            (queue[i]->count == queue[min]->count &&
+             ((queue[i]->c < queue[min]->c && queue[i]->c != 0) ||
+              queue[min]->c == 0)))
         {
             min = i;
         }
