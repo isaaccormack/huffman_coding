@@ -101,7 +101,7 @@ void test_char_count(int char_count[])
     printf("-----TOTAL CHARACTERS: %d", total);
 }
 
-void test_encoding(char *encoding[])
+void test_encoding_map(char *encoding[])
 {
     int i = 0;
     while (i < CHARSET_SIZE)
@@ -230,5 +230,5 @@ int main(int argc, char **argv)
     // traverse tree, get encoding
     get_encoding(root, bit_array, 0, encoding);
 
-    // test_encoding(encoding); // uncomment to test encoding
+    test_encoding_map(encoding); // uncomment to test encoding map
 }
