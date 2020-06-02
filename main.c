@@ -28,7 +28,10 @@ Node *dequeue(Node *queue[], int *queue_length)
     int i = 0;
     for (i = 0; i < *queue_length; i++)
     {
-        if (queue[i]->count < queue[min]->count || (queue[i]->count == queue[min]->count && queue[i]->c < queue[min]->c))
+        if (queue[i]->count < queue[min]->count ||
+            (queue[i]->count == queue[min]->count &&
+             ((queue[i]->c < queue[min]->c && queue[i]->c != 0) ||
+              queue[min]->c == 0)))
         {
             min = i;
         }
@@ -98,7 +101,7 @@ void test_char_count(int char_count[])
     printf("-----TOTAL CHARACTERS: %d", total);
 }
 
-void test_encoding(char *encoding[])
+void test_encoding_map(char *encoding[])
 {
     int i = 0;
     while (i < CHARSET_SIZE)
@@ -227,5 +230,5 @@ int main(int argc, char **argv)
     // traverse tree, get encoding
     get_encoding(root, bit_array, 0, encoding);
 
-    // test_encoding(encoding); // uncomment to test encoding
+    test_encoding_map(encoding); // uncomment to test encoding map
 }
