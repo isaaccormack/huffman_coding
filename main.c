@@ -4,7 +4,6 @@
 #define MAX_BUFFER_SIZE 1024
 #define CHARSET_SIZE 256
 
-// Heres what I had in mind, doesn't effect any code I've written so feel free to change
 typedef struct Node
 {
     struct Node *left;
@@ -28,7 +27,10 @@ Node *dequeue(Node *queue[], int *queue_length)
     int i = 0;
     for (i = 0; i < *queue_length; i++)
     {
-        if (queue[i]->count < queue[min]->count || (queue[i]->count == queue[min]->count && queue[i]->c < queue[min]->c))
+        if (queue[i]->count < queue[min]->count ||
+            (queue[i]->count == queue[min]->count &&
+             ((queue[i]->c < queue[min]->c && queue[i]->c != 0) ||
+              queue[min]->c == 0)))
         {
             min = i;
         }
@@ -105,7 +107,7 @@ void test_char_count(int char_count[])
     printf("-----TOTAL CHARACTERS: %d\n", total);
 }
 
-void test_encoding(char *encoding[])
+void test_encoding_map(char *encoding[])
 {
     int i = 0;
     int unique = 0;
@@ -296,7 +298,7 @@ int main(int argc, char **argv)
     // traverse tree, get encoding
     get_encoding(root, bit_array, 0, encoding);
 
-    // test_encoding(encoding); // uncomment to test encoding
+    // test_encoding_map(encoding); // uncomment to test encoding map
 
     // create new output file here
     FILE* out_fp = fopen("huffman_encoding_out.txt", "w+");
@@ -391,5 +393,4 @@ int main(int argc, char **argv)
 
     // print_expected_huffman_code(f_name, encoding);  // uncomment to print the expected huffman code
     // test_huffman_code(encoding); // uncomment to print the huffman code generated
-
 }
