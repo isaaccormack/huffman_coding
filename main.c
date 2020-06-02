@@ -251,7 +251,7 @@ int main(int argc, char **argv)
     // add pseudo EOF, ASCII of 26 == EOF
     char_count[26]++;
 
-    test_char_count(char_count); // uncomment to test char count
+    // test_char_count(char_count); // uncomment to test char count
 
     // add nodes to priority queue
     Node *priority_queue[CHARSET_SIZE];
