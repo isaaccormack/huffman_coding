@@ -1,3 +1,5 @@
 **/.DS_Store
 **/.vscode
 **/a.out
+huffman_encoding_out.txt
+test/huffman_encoding_out.txt
