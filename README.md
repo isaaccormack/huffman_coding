@@ -7,9 +7,9 @@ ARM processor optimized implementation of Huffman Encoding Algorithm for SENG 44
 git clone https://github.com/isaaccormack/huffman_encoding.git
 ```
 
-2. Compile main.c
+2. Compile encode.c
 ```
-gcc main.c
+gcc encode.c
 ```
 
 3. Run with a single input file

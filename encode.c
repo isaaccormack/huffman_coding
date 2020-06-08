@@ -124,7 +124,8 @@ void test_encoding_map(char *encoding[])
             { // special case to escape EOF into correct format
                 printf("Code: %5d 0x%X 'EOF' Encoding: %s\n", i, i, encoding[i]);
             }
-            else            {
+            else
+            {
                 printf("Code: %5d 0x%X '%c' Encoding: %s\n", i, i, (char)i, encoding[i]);
             }
         }
@@ -135,18 +136,19 @@ void test_encoding_map(char *encoding[])
 
 void print_expected_huffman_code(char *infile, char *encoding[])
 {
-    FILE* fp = fopen(infile, "r");
+    FILE *fp = fopen(infile, "r");
 
     int ctr = 0;
     int c = 0;
-    do {
+    do
+    {
         c = fgetc(fp);
         if (feof(fp))
         {
             c = 26;
         }
 
-        char* e = encoding[c];
+        char *e = encoding[c];
 
         for (int i = 0; e[i] != '\0'; i++)
         {
@@ -168,7 +170,8 @@ void print_expected_huffman_code(char *infile, char *encoding[])
 
     // space before \n to match formating in test_huffman_code for convenience
     // if ctr is 0, then there would be a double space at the end, since a space was just printed
-    if (ctr != 0) {
+    if (ctr != 0)
+    {
         printf(" ");
     }
     printf("\n");
@@ -176,9 +179,9 @@ void print_expected_huffman_code(char *infile, char *encoding[])
     fclose(fp);
 }
 
-void test_huffman_code(char *encoding[]) {
-    FILE* huff_fp = fopen("huffman_encoding_out.txt", "r");
-
+void test_huffman_code(char *encoding[])
+{
+    FILE *huff_fp = fopen("huffman_encoding_out.txt", "r");
 
     // ignore character encodings on first line
     int c = 0;
@@ -186,8 +189,8 @@ void test_huffman_code(char *encoding[]) {
     while (c != '\n')
         c = fgetc(huff_fp);
 
-
-    do {
+    do
+    {
         c = fgetc(huff_fp);
         if (feof(huff_fp))
         {
@@ -228,7 +231,6 @@ int main(int argc, char **argv)
     // index array via ascii of char, value is its count
     int char_count[CHARSET_SIZE] = {0};
 
-
     FILE *fp = fopen(f_name, "rb");
     if (fp == NULL)
     {
@@ -237,16 +239,18 @@ int main(int argc, char **argv)
     }
 
     int c = fgetc(fp);
-    if (feof(fp)) {
+    if (feof(fp))
+    {
         // this text to stdout is needed for char count test1.txt
         fprintf(stdout, "File is empty. Exiting...\n");
         exit(1);
     }
 
-   while (!feof(fp)) {
+    while (!feof(fp))
+    {
         char_count[c]++;
         c = fgetc(fp);
-   }
+    }
 
     fclose(fp);
 
@@ -301,7 +305,7 @@ int main(int argc, char **argv)
     // test_encoding_map(encoding); // uncomment to test encoding map
 
     // create new output file here
-    FILE* out_fp = fopen("huffman_encoding_out.txt", "w+");
+    FILE *out_fp = fopen("huffman_encoding_out.txt", "w+");
     if (out_fp == NULL)
     {
         fprintf(stderr, "Can't create huffman_encoding_out.txt. Exiting...\n");
@@ -334,14 +338,15 @@ int main(int argc, char **argv)
 
     int buf_ctr = 0;
     char char_buf = 0;
-    do {
+    do
+    {
         c = fgetc(fp);
         if (feof(fp))
         {
             c = 26;
         }
 
-        char* e = encoding[c];
+        char *e = encoding[c];
 
         for (int i = 0; e[i] != '\0'; i++)
         {
@@ -357,7 +362,8 @@ int main(int argc, char **argv)
             buf_ctr++;
 
             // once there is a full char to write to file
-            if (buf_ctr == 8) {
+            if (buf_ctr == 8)
+            {
                 fputc(char_buf, out_fp);
                 buf_ctr = 0;
                 char_buf = 0;
@@ -367,22 +373,24 @@ int main(int argc, char **argv)
     } while (c != 26);
 
     if (ferror(fp))
-    {           
+    {
         fprintf(stderr, "Can't read from %s. Exiting...\n", f_name);
         exit(1);
     }
 
-    while (!(buf_ctr == 8 || buf_ctr == 0)) {
+    while (!(buf_ctr == 8 || buf_ctr == 0))
+    {
         char_buf = (char_buf << 1); // shift in 0
         buf_ctr++;
     }
 
-    if (buf_ctr != 0) {
+    if (buf_ctr != 0)
+    {
         fputc(char_buf, out_fp);
     }
 
     if (ferror(out_fp))
-    {           
+    {
         fprintf(stderr, "Can't write to huffman_encoding_out.txt. Exiting...\n");
         exit(1);
     }

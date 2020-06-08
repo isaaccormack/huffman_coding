@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-gcc ../main.c
+gcc ../encode.c
 
-# Ensure that test_char_count() is uncommented in main.c and
+# Ensure that test_char_count() is uncommented in encode.c and
 # no text is printed to stdout
 for i in {1..5}
 do
