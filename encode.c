@@ -242,7 +242,9 @@ int main(int argc, char **argv)
     if (feof(fp))
     {
         // this text to stdout is needed for char count test1.txt
-        fprintf(stdout, "File is empty. Exiting...\n");
+        fprintf(stderr, "File is empty. Exiting...\n");
+        FILE *out_fp = fopen("huffman_encoding_out.txt", "w+");
+        fclose(out_fp);
         exit(1);
     }
 
@@ -318,7 +320,7 @@ int main(int argc, char **argv)
         if (encoding[i] != 0)
         {
             // fprintf returns EOF on error
-            if (fprintf(out_fp, "%d=%s ", i, encoding[i]) < 0)
+            if (fprintf(out_fp, "%c%s ", i, encoding[i]) < 0)
             {
                 fprintf(stderr, "Can't write to huffman_encoding_out.txt. Exiting...\n");
                 exit(1);
@@ -326,6 +328,7 @@ int main(int argc, char **argv)
         }
     }
     // delimit character encodins with newline
+    fseek(out_fp, -1, SEEK_CUR);
     if (fprintf(out_fp, "\n") < 0)
     {
         fprintf(stderr, "Can't write to huffman_encoding_out.txt. Exiting...\n");
