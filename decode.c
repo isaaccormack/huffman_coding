@@ -5,14 +5,15 @@ typedef struct Entry
 {
     char c;
     int code_length;
-    char binary;
+    int binary;
+    struct Entry **innertable;
 } Entry;
 
-void print_binary(int number, int length)
+void print_binary(int number, int start, int length)
 {
-    if (length < 8)
+    if (start < length)
     {
-        print_binary(number >> 1, length + 1);
+        print_binary(number >> 1, start + 1, length);
         putc((number & 1) ? '1' : '0', stdout);
     }
 }
@@ -54,22 +55,53 @@ char bit_reader(int read_bits, FILE *fp, char *buffer, int *buffer_length)
     return -1;
 }
 
-int add_table_entry(char c, char binary, int bin_length, Entry *table[])
+int add_table_entry(char c, unsigned int binary, int bin_length, Entry *table[])
 {
     Entry *entry = (Entry *)malloc(sizeof(Entry));
+
     entry->c = c;
     entry->code_length = bin_length;
     entry->binary = binary;
 
-    unsigned char lower = binary;
-    unsigned char upper = binary | (0b11111111 >> bin_length);
-    printf("%d,%d", lower, upper);
+    unsigned char lower = binary >> 24;
+    unsigned char upper = lower | (0b11111111 >> bin_length);
+
+    printf("range(%d-%d)", lower, upper);
     int i;
     for (i = lower; i <= upper; i++)
     {
-        if (table[i] == NULL || table[i]->code_length < entry->code_length)
+        // if lenght =< 8, no existing
+        // if length =< 8, is existing
+        // if length > 8, no existing
+        // if length > 8, no existing
+        if (bin_length <= 8)
         {
-            table[i] = entry;
+            if (table[i] == NULL)
+            {
+                table[i] = entry;
+            }
+            else if (table[i]->code_length < entry->code_length)
+            {
+                table[i] = entry;
+            }
+        }
+        else
+        {
+            printf("entr_inner ");
+            if (table[i] == NULL || table[i]->innertable == NULL)
+            {
+                // If there's no existing inner table, create one and fill.
+                Entry **inner_table = (Entry **)malloc(256 * sizeof(Entry *));
+                entry->innertable = inner_table;
+                add_table_entry(c, (binary << 8), bin_length - 8, inner_table);
+                table[i] = entry;
+            }
+            else
+            {
+                // If there is an existing inner table, put entry in that table.
+                add_table_entry(c, (binary << 8), bin_length - 8, table[i]->innertable);
+            }
+            printf(" exit_inner ");
         }
     }
     return 0;
@@ -107,7 +139,7 @@ int main(int argc, char **argv)
         char binary_stream;
 
         // Adjust this to 256 bit long
-        char binary = 0;
+        unsigned int binary = 0;
         while (1)
         {
             binary_stream = fgetc(input_file);
@@ -120,7 +152,7 @@ int main(int argc, char **argv)
                 break;
             }
             putc(binary_stream, stdout);
-            binary |= (binary_stream == '1') << (7 - bin_length);
+            binary |= (binary_stream == '1') << (31 - bin_length);
             bin_length++;
         }
         printf(" ");
@@ -138,33 +170,51 @@ int main(int argc, char **argv)
 
     // Print table
     int i;
-    for (i = 0; i < 256; i++)
-    {
-        print_binary(i, 0);
-        if (root_table[i] != NULL)
-        {
-            printf(" %c(%d) ", root_table[i]->c, root_table[i]->c);
-            print_binary(root_table[i]->binary, 0);
-        }
-        printf("\n");
-    }
+    // for (i = 0; i < 256; i++)
+    // {
+    //     print_binary(i, 0, 32);
+    //     if (root_table[i] != NULL)
+    //     {
+    //         if (root_table[i]->innertable != NULL)
+    //         {
+    //             printf(" **hi** ");
+    //         }
+    //         printf(" %c(%d) ", root_table[i]->c, root_table[i]->code_length);
+    //         print_binary(root_table[i]->binary, 0, 32);
+    //     }
+    //     printf("\n");
+    // }
+    // printf(" %c(%d) %c", root_table[107]->c, root_table[107]->c, root_table[107]->innertable[192]->c);
 
+    // return 0;
     // Decode stream ---
     i = 0;
     char bit_buffer = 0;
     int buffer_length = 0;
     int neededbits = 8;
     unsigned char buffer = 0;
+    Entry **table = root_table;
     while (!feof(input_file))
     {
         buffer |= bit_reader(neededbits, input_file, &bit_buffer, &buffer_length);
-        printf("%c", root_table[buffer]->c);
-        if (root_table[buffer]->c == 26)
+        neededbits = table[buffer]->code_length;
+
+        if (table[buffer]->innertable == NULL)
         {
-            printf("EOT\n");
-            break;
+            if (table[buffer]->c == 26)
+            {
+                printf("EOT\n");
+                break;
+            }
+            printf("%c", table[buffer]->c);
+            table = root_table;
         }
-        neededbits = root_table[buffer]->code_length;
+        else
+        {
+            table = table[buffer]->innertable;
+            neededbits = 8;
+        }
+
         buffer = buffer << neededbits;
         i++;
     }
