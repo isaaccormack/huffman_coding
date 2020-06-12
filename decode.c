@@ -66,7 +66,7 @@ int add_table_entry(char c, unsigned int binary, int bin_length, Entry *table[])
     unsigned char lower = binary >> 24;
     unsigned char upper = lower | (0b11111111 >> bin_length);
 
-    printf("range(%d-%d)", lower, upper);
+    // printf("range(%d-%d)", lower, upper);
     int i;
     for (i = lower; i <= upper; i++)
     {
@@ -87,7 +87,7 @@ int add_table_entry(char c, unsigned int binary, int bin_length, Entry *table[])
         }
         else
         {
-            printf("entr_inner ");
+            // printf("entr_inner ");
             if (table[i] == NULL || table[i]->innertable == NULL)
             {
                 // If there's no existing inner table, create one and fill.
@@ -101,7 +101,7 @@ int add_table_entry(char c, unsigned int binary, int bin_length, Entry *table[])
                 // If there is an existing inner table, put entry in that table.
                 add_table_entry(c, (binary << 8), bin_length - 8, table[i]->innertable);
             }
-            printf(" exit_inner ");
+            // printf(" exit_inner ");
         }
     }
     return 0;
@@ -151,13 +151,13 @@ int main(int argc, char **argv)
             {
                 break;
             }
-            putc(binary_stream, stdout);
+            // putc(binary_stream, stdout);
             binary |= (binary_stream == '1') << (31 - bin_length);
             bin_length++;
         }
-        printf(" ");
+        // printf(" ");
         add_table_entry(c, binary, bin_length, root_table);
-        printf(" %c(%d)\n", c, c);
+        // printf(" %c(%d)\n", c, c);
 
         if (binary_stream == '\n')
         {
@@ -203,7 +203,7 @@ int main(int argc, char **argv)
         {
             if (table[buffer]->c == 26)
             {
-                printf("EOT\n");
+                fprintf(stderr, "EOT\n");
                 break;
             }
             printf("%c", table[buffer]->c);
