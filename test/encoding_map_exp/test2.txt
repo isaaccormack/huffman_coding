@@ -1,15 +1,17 @@
-' ': 110
-'.': 10000
-'?': 10001
-'P': 01010
-'T': 01011
-'a': 01000
-'e': 000
-'f': 01001
-'g': 10110
-'h': 1001
-'i': 001
-'r': 1010
-'s': 011
-'t': 111
-'y': 10111
+Code:    26 0x1A 'EOF' Encoding: 01010
+Code:    32 0x20 ' ' Encoding: 101
+Code:    46 0x2E '.' Encoding: 01011
+Code:    63 0x3F '?' Encoding: 01000
+Code:    80 0x50 'P' Encoding: 01001
+Code:    84 0x54 'T' Encoding: 00110
+Code:    97 0x61 'a' Encoding: 00111
+Code:   101 0x65 'e' Encoding: 1111
+Code:   102 0x66 'f' Encoding: 10000
+Code:   103 0x67 'g' Encoding: 10001
+Code:   104 0x68 'h' Encoding: 1001
+Code:   105 0x69 'i' Encoding: 000
+Code:   114 0x72 'r' Encoding: 1110
+Code:   115 0x73 's' Encoding: 011
+Code:   116 0x74 't' Encoding: 110
+Code:   121 0x79 'y' Encoding: 0010
+-----TOTAL UNIQUE: 16
