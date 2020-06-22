@@ -185,9 +185,13 @@ void test_huffman_code(char *encoding[])
 
     // ignore character encodings on first line
     int c = 0;
+    int last = ' ';
     c = fgetc(huff_fp);
-    while (c != '\n')
+    while (!(c == '\n' && last != ' '))
+    {
+        last = c;
         c = fgetc(huff_fp);
+    }
 
     do
     {
@@ -402,6 +406,6 @@ int main(int argc, char **argv)
     fclose(out_fp);
     fclose(fp);
 
-    // print_expected_huffman_code(f_name, encoding);  // uncomment to print the expected huffman code
+    // print_expected_huffman_code(f_name, encoding); // uncomment to print the expected huffman code
     // test_huffman_code(encoding); // uncomment to print the huffman code generated
 }
