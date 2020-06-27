@@ -246,5 +246,4 @@ int main(int argc, char **argv)
     // test_encoding_map(encoding); // uncomment to test encoding map
 
     print_huffman_encoding(f_name, encoding); // uncomment to print the huffman code
-    // print_expected_huffman_code(f_name, encoding); // uncomment to print the expected huffman code
 }
