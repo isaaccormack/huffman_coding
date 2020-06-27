@@ -1,16 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-
-#define MAX_BUFFER_SIZE 1024
-#define CHARSET_SIZE 256
-
-typedef struct Node
-{
-    struct Node *left;
-    struct Node *right;
-    int count;
-    char c;
-} Node;
+#include "encode.h"
+#include "tests.h"
 
 // add node to end of priority queue
 void enqueue(Node *queue[], int *queue_length, Node *node)
@@ -43,200 +34,8 @@ Node *dequeue(Node *queue[], int *queue_length)
     return min_node;
 }
 
-// traverse through huffman tree building <char,encoding> map
-void get_encoding(Node *node, int bit_array[], int array_len, char *encoding[])
-{
-    // If a node has a char value, then it is a leaf node
-    if (node->c)
-    {
-        encoding[node->c] = (char *)malloc(sizeof(char) * array_len);
-
-        // convert int array into string
-        int i = 0;
-        char bit;
-        while (i < array_len)
-        {
-            sprintf(&encoding[node->c][i], "%d", bit_array[i]);
-            i++;
-        }
-        return;
-    }
-
-    if (node->left)
-    {
-        bit_array[array_len] = 0;
-        get_encoding(node->left, bit_array, array_len + 1, encoding);
-    }
-
-    if (node->right)
-    {
-        bit_array[array_len] = 1;
-        get_encoding(node->right, bit_array, array_len + 1, encoding);
-    }
-    return;
-}
-
-// used in conjunction with test_char_count.sh
-void test_char_count(int char_count[])
-{
-    int i = 0;
-    int total = 0;
-    int unique = 0;
-    while (i < CHARSET_SIZE)
-    {
-        if (char_count[i] != 0)
-        {
-            unique++;
-            total += char_count[i];
-            if (i == 10)
-            { // special case to escape line feed into correct format
-                printf("Code: %5d 0x%X 'LF' Count: %d\n", i, i, char_count[i]);
-            }
-            else if (i == 26)
-            { // special case to escape EOF into correct format
-                printf("Code: %5d 0x%X 'EOF' Count: %d\n", i, i, char_count[i]);
-            }
-            else
-            {
-                printf("Code: %5d 0x%X '%c' Count: %d\n", i, i, (char)i, char_count[i]);
-            }
-        }
-        i++;
-    }
-    // printf("-----TOTAL UNIQUE: %d\n", unique);
-    printf("-----TOTAL CHARACTERS: %d\n", total);
-}
-
-void test_encoding_map(char *encoding[])
-{
-    int i = 0;
-    int unique = 0;
-    while (i < CHARSET_SIZE)
-    {
-        if (encoding[i] != 0)
-        {
-            unique++;
-            if (i == 10)
-            { // special case to escape line feed into correct format
-                printf("Code: %5d 0x%X 'LF' Encoding: %s\n", i, i, encoding[i]);
-            }
-            else if (i == 26)
-            { // special case to escape EOF into correct format
-                printf("Code: %5d 0x%X 'EOF' Encoding: %s\n", i, i, encoding[i]);
-            }
-            else
-            {
-                printf("Code: %5d 0x%X '%c' Encoding: %s\n", i, i, (char)i, encoding[i]);
-            }
-        }
-        i++;
-    }
-    printf("-----TOTAL UNIQUE: %d\n", unique);
-}
-
-void print_expected_huffman_code(char *infile, char *encoding[])
-{
-    FILE *fp = fopen(infile, "r");
-
-    int ctr = 0;
-    int c = 0;
-    do
-    {
-        c = fgetc(fp);
-        if (feof(fp))
-        {
-            c = 26;
-        }
-
-        char *e = encoding[c];
-
-        int i;
-        for (i = 0; e[i] != '\0'; i++)
-        {
-            printf("%c", e[i]);
-            ctr++;
-            if (ctr == 8)
-            {
-                printf(" ");
-                ctr = 0;
-            }
-        }
-    } while (c != 26);
-
-    while (!(ctr == 8 || ctr == 0))
-    {
-        printf("0"); // fill in the rest of the byte with 0's
-        ctr++;
-    }
-
-    // space before \n to match formating in test_huffman_code for convenience
-    // if ctr is 0, then there would be a double space at the end, since a space was just printed
-    if (ctr != 0)
-    {
-        printf(" ");
-    }
-    printf("\n");
-
-    fclose(fp);
-}
-
-void test_huffman_code(char *encoding[])
-{
-    FILE *huff_fp = fopen("huffman_encoding_out.txt", "r");
-
-    // ignore character encodings on first line
-    int c = 0;
-    int last = ' ';
-    c = fgetc(huff_fp);
-    while (!(c == '\n' && last != ' '))
-    {
-        last = c;
-        c = fgetc(huff_fp);
-    }
-
-    do
-    {
-        c = fgetc(huff_fp);
-        if (feof(huff_fp))
-        {
-            break;
-        }
-        // shift c such that first bit of byte is msb
-        c <<= 24;
-
-        // need to write this out to huff_out.txt
-        int i;
-        for (i = 0; i < 8; i++)
-        {
-            if (c & (1 << 31)) // if msb is set
-                printf("1");
-            else
-                printf("0");
-
-            c <<= 1;
-        }
-        printf(" "); // need to fix where this prints this space
-
-    } while (1);
-    printf("\n");
-
-    fclose(huff_fp);
-}
-
-int main(int argc, char **argv)
-{
-    // could support many input files and running test files if input files later
-    if (argc != 2)
-    {
-        printf("Usage: ./huffman_encoding <file1.txt> <file2.txt> ...\n");
-        exit(1);
-    }
-
-    char *f_name = argv[1];
-
-    // index array via ascii of char, value is its count
-    int char_count[CHARSET_SIZE] = {0};
-
+// read through the file building <char,char count> map
+void get_char_count(char* f_name, int* char_count) {
     FILE *fp = fopen(f_name, "rb");
     if (fp == NULL)
     {
@@ -247,11 +46,8 @@ int main(int argc, char **argv)
     int c = fgetc(fp);
     if (feof(fp))
     {
-        // this text to stdout is needed for char count test1.txt
-        fprintf(stderr, "File is empty. Exiting...\n");
-        FILE *out_fp = fopen("huffman_encoding_out.txt", "w+");
-        fclose(out_fp);
-        exit(1);
+        fclose(fp);
+        exit(0); // file is empty so no text to encode
     }
 
     while (!feof(fp))
@@ -265,9 +61,10 @@ int main(int argc, char **argv)
     // add pseudo EOF, ASCII of 26 == EOF
     char_count[26]++;
 
-    // test_char_count(char_count); // uncomment to test char count
+}
 
-    // add nodes to priority queue
+// dynamically allocate huffman tree using a priority queue 
+void make_huffman_tree(Node** root, int* char_count) {
     Node *priority_queue[CHARSET_SIZE];
     int i = 0;
     int queue_length = 0;
@@ -302,49 +99,65 @@ int main(int argc, char **argv)
         enqueue(priority_queue, &queue_length, new_node);
     }
 
-    // last node is root
-    Node *root = dequeue(priority_queue, &queue_length);
-    int bit_array[CHARSET_SIZE] = {};
-    char *encoding[CHARSET_SIZE] = {};
+    *root = dequeue(priority_queue, &queue_length);
+}
 
-    // traverse tree, get encoding
-    get_encoding(root, bit_array, 0, encoding);
-
-    // test_encoding_map(encoding); // uncomment to test encoding map
-
-    // create new output file here
-    FILE *out_fp = fopen("huffman_encoding_out.txt", "w+");
-    if (out_fp == NULL)
+// traverse through huffman tree building <char,encoding> map
+void get_encoding_map(Node *node, int bit_array[], int array_len, char *encoding[])
+{
+    // If a node has a char value, then it is a leaf node
+    if (node->c)
     {
-        fprintf(stderr, "Can't create huffman_encoding_out.txt. Exiting...\n");
-        exit(1);
+        encoding[node->c] = (char *)malloc(sizeof(char) * array_len);
+
+        // convert int array into string
+        int i = 0;
+        char bit;
+        while (i < array_len)
+        {
+            sprintf(&encoding[node->c][i], "%d", bit_array[i]);
+            i++;
+        }
+        return;
     }
 
-    // write character encodings into huffman message
-    for (i = 0; i < CHARSET_SIZE; i++)
+    if (node->left)
+    {
+        bit_array[array_len] = 0;
+        get_encoding_map(node->left, bit_array, array_len + 1, encoding);
+    }
+
+    if (node->right)
+    {
+        bit_array[array_len] = 1;
+        get_encoding_map(node->right, bit_array, array_len + 1, encoding);
+    }
+    return;
+}
+
+void print_huffman_encoding(char* f_name, char *encoding[]) {
+
+    // begin huffman message with character encodings
+    for (int i = 0; i < CHARSET_SIZE; i++)
     {
         if (encoding[i] != 0)
         {
-            // fprintf returns EOF on error
-            if (fprintf(out_fp, "%c%s ", i, encoding[i]) < 0)
-            {
-                fprintf(stderr, "Can't write to huffman_encoding_out.txt. Exiting...\n");
-                exit(1);
-            }
+            printf("%c%s ", i, encoding[i]);
         }
     }
-    // delimit character encodins with newline
-    fseek(out_fp, -1, SEEK_CUR);
-    if (fprintf(out_fp, "\n") < 0)
+
+    // delimit character encodings with newline
+    printf("\n");
+
+    FILE *fp = fopen(f_name, "rb");
+    if (fp == NULL)
     {
-        fprintf(stderr, "Can't write to huffman_encoding_out.txt. Exiting...\n");
+        fprintf(stderr, "Can't open %s. Exiting...\n", f_name);
         exit(1);
     }
 
-    // write huffman encoding to file by shifting bitshifting encoding into chars
-    fp = fopen(f_name, "r");
-    fseek(fp, 0, SEEK_SET);
-
+    // print huffman encoding by shifting bitshifting encoding into chars
+    int c;
     int buf_ctr = 0;
     char char_buf = 0;
     do
@@ -357,7 +170,7 @@ int main(int argc, char **argv)
 
         char *e = encoding[c];
 
-        for (i = 0; e[i] != '\0'; i++)
+        for (int i = 0; e[i] != '\0'; i++)
         {
             if (e[i] == '1')
             {
@@ -373,7 +186,11 @@ int main(int argc, char **argv)
             // once there is a full char to write to file
             if (buf_ctr == 8)
             {
-                fputc(char_buf, out_fp);
+                if (putchar(char_buf) == EOF) {
+                    fprintf(stderr, "Can't write stdout. Exiting...\n");
+                    fclose(fp);
+                    exit(1);
+                } 
                 buf_ctr = 0;
                 char_buf = 0;
             }
@@ -384,6 +201,7 @@ int main(int argc, char **argv)
     if (ferror(fp))
     {
         fprintf(stderr, "Can't read from %s. Exiting...\n", f_name);
+        fclose(fp);
         exit(1);
     }
 
@@ -395,19 +213,38 @@ int main(int argc, char **argv)
 
     if (buf_ctr != 0)
     {
-        fputc(char_buf, out_fp);
+        if (putchar(char_buf) == EOF) {
+            fprintf(stderr, "Can't write stdout. Exiting...\n");
+            fclose(fp);
+            exit(1);
+        } 
     }
 
-    if (ferror(out_fp))
+    fclose(fp);
+}
+
+int main(int argc, char **argv)
+{
+    if (argc != 2)
     {
-        fprintf(stderr, "Can't write to huffman_encoding_out.txt. Exiting...\n");
+        printf("Usage: ./huffman_encoding input_file.txt\n");
         exit(1);
     }
 
-    // could handle closing of files on error, not a big deal though
-    fclose(out_fp);
-    fclose(fp);
+    char *f_name = argv[1];
 
+    int char_count[CHARSET_SIZE] = {0}; // [(int)char] = char count
+    get_char_count(f_name, char_count);
+    // test_char_count(char_count); // uncomment to test char count
+
+    Node *root;
+    make_huffman_tree(&root, char_count);
+
+    int bit_array[CHARSET_SIZE] = {};
+    char *encoding[CHARSET_SIZE] = {};
+    get_encoding_map(root, bit_array, 0, encoding);
+    // test_encoding_map(encoding); // uncomment to test encoding map
+
+    print_huffman_encoding(f_name, encoding); // uncomment to print the huffman code
     // print_expected_huffman_code(f_name, encoding); // uncomment to print the expected huffman code
-    // test_huffman_code(encoding); // uncomment to print the huffman code generated
 }

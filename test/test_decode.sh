@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-gcc ../encode.c -o encode.out
+cd ..
+make
+cd test
+cp ../encode encode.out
 gcc ../decode.c -o decode.out
 
 for i in {1..5}

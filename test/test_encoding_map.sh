@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-gcc ../encode.c
+cd ..
+make
+cd test
+cp ../encode a.out
 
 # Ensure that test_encoding_map() is uncommented in encode.c and
 # no text is printed to stdout
