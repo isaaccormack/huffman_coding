@@ -18,6 +18,7 @@ void print_binary(int number, int start, int length)
     }
 }
 
+// This function oututs a number of bits equal to read_bits.
 char bit_reader(int read_bits, FILE *fp, char *buffer, int *buffer_length)
 {
     if (read_bits > 8)
@@ -70,10 +71,7 @@ int add_table_entry(char c, unsigned int binary, int bin_length, Entry *table[])
     int i;
     for (i = lower; i <= upper; i++)
     {
-        // if lenght =< 8, no existing
-        // if length =< 8, is existing
-        // if length > 8, no existing
-        // if length > 8, no existing
+        // If encoding length is <= 8, add entries
         if (bin_length <= 8)
         {
             if (table[i] == NULL)
@@ -85,6 +83,7 @@ int add_table_entry(char c, unsigned int binary, int bin_length, Entry *table[])
                 table[i] = entry;
             }
         }
+        // If encoding length is greater than 8, add entry in nested lookup table
         else
         {
             // printf("entr_inner ");
@@ -133,12 +132,13 @@ int main(int argc, char **argv)
 
     Entry *root_table[256] = {0};
 
+    // Build lookup table ---
     while (!feof(input_file))
     {
         int bin_length = 0;
         char binary_stream;
 
-        // Adjust this to 256 bit long
+        // Read in one encoding mapping
         unsigned int binary = 0;
         while (1)
         {
@@ -155,7 +155,8 @@ int main(int argc, char **argv)
             binary |= (binary_stream == '1') << (31 - bin_length);
             bin_length++;
         }
-        // printf(" ");
+
+        // Add encoding mapping to table
         add_table_entry(c, binary, bin_length, root_table);
         // printf(" %c(%d)\n", c, c);
 
@@ -168,27 +169,8 @@ int main(int argc, char **argv)
         c = fgetc(input_file);
     }
 
-    // Print table
-    int i;
-    // for (i = 0; i < 256; i++)
-    // {
-    //     print_binary(i, 0, 32);
-    //     if (root_table[i] != NULL)
-    //     {
-    //         if (root_table[i]->innertable != NULL)
-    //         {
-    //             printf(" **hi** ");
-    //         }
-    //         printf(" %c(%d) ", root_table[i]->c, root_table[i]->code_length);
-    //         print_binary(root_table[i]->binary, 0, 32);
-    //     }
-    //     printf("\n");
-    // }
-    // printf(" %c(%d) %c", root_table[107]->c, root_table[107]->c, root_table[107]->innertable[192]->c);
-
-    // return 0;
     // Decode stream ---
-    i = 0;
+    int i = 0;
     char bit_buffer = 0;
     int buffer_length = 0;
     int neededbits = 8;
@@ -196,9 +178,13 @@ int main(int argc, char **argv)
     Entry **table = root_table;
     while (!feof(input_file))
     {
+        // fill buffer from file with
         buffer |= bit_reader(neededbits, input_file, &bit_buffer, &buffer_length);
+
+        // Get code length from lookup table entry
         neededbits = table[buffer]->code_length;
 
+        // If there is no nested table, then print a character is associated with the encoding
         if (table[buffer]->innertable == NULL)
         {
             if (table[buffer]->c == 26)
@@ -206,15 +192,19 @@ int main(int argc, char **argv)
                 fprintf(stderr, "EOT\n");
                 break;
             }
+            // print the character associated with the encoding
             printf("%c", table[buffer]->c);
             table = root_table;
         }
+        // If there is a nested table, then set the nested table and retrieve 8 more bits
+        // This means that the associated encoding is longer than 8 bits and requires a secondary table
         else
         {
             table = table[buffer]->innertable;
             neededbits = 8;
         }
 
+        // Erase used bits
         buffer = buffer << neededbits;
         i++;
     }
