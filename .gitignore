@@ -3,9 +3,9 @@
 **/a.out
 encode
 decode
-test/char_count_out
+test/char_count_out/*
 !test/char_count_out/.gitkeep
-test/encoding_map_out
+test/encoding_map_out/*
 !test/encoding_map_out/.gitkeep
-test/huffman_code_out
+test/huffman_code_out/*
 !test/huffman_code_out/.gitkeep
