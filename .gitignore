@@ -1,6 +1,8 @@
 **/.DS_Store
 **/.vscode
 **/a.out
+encode
+decode
 test/char_count_out
 !test/char_count_out/.gitkeep
 test/encoding_map_out
