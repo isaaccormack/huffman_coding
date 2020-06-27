@@ -150,7 +150,8 @@ void print_expected_huffman_code(char *infile, char *encoding[])
 
         char *e = encoding[c];
 
-        for (int i = 0; e[i] != '\0'; i++)
+        int i;
+        for (i = 0; e[i] != '\0'; i++)
         {
             printf("%c", e[i]);
             ctr++;
@@ -204,7 +205,8 @@ void test_huffman_code(char *encoding[])
         c <<= 24;
 
         // need to write this out to huff_out.txt
-        for (int i = 0; i < 8; i++)
+        int i;
+        for (i = 0; i < 8; i++)
         {
             if (c & (1 << 31)) // if msb is set
                 printf("1");
@@ -319,7 +321,7 @@ int main(int argc, char **argv)
     }
 
     // write character encodings into huffman message
-    for (int i = 0; i < CHARSET_SIZE; i++)
+    for (i = 0; i < CHARSET_SIZE; i++)
     {
         if (encoding[i] != 0)
         {
@@ -355,7 +357,7 @@ int main(int argc, char **argv)
 
         char *e = encoding[c];
 
-        for (int i = 0; e[i] != '\0'; i++)
+        for (i = 0; e[i] != '\0'; i++)
         {
             if (e[i] == '1')
             {
