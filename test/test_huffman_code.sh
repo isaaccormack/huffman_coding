@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
-gcc ../encode.c
+cd ..
+make
+cd test
+cp ../encode a.out
 
 # Ensure that test_huffman_code() is uncommented in encode.c and
 # no other text is printed to stdout

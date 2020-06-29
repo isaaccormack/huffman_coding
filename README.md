@@ -1,15 +1,19 @@
 # huffman_encoding
 ARM processor optimized implementation of Huffman Encoding Algorithm for SENG 440.
 
+
+UPDATE THIS WITH MAKE for decoder and encoder and update tests and usage once implemented
+
+
 ## Getting Started
 1. Clone the repo
 ```
 git clone https://github.com/isaaccormack/huffman_encoding.git
 ```
 
-2. Compile encode.c
+2. Make the encoder and decoder
 ```
-gcc encode.c
+make
 ```
 
 3. Run with a single input file

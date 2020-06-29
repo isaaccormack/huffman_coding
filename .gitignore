@@ -1,5 +1,11 @@
 **/.DS_Store
 **/.vscode
 **/a.out
-huffman_encoding_out.txt
-test/huffman_encoding_out.txt
+encode
+decode
+test/char_count_out/*
+!test/char_count_out/.gitkeep
+test/encoding_map_out/*
+!test/encoding_map_out/.gitkeep
+test/huffman_code_out/*
+!test/huffman_code_out/.gitkeep
