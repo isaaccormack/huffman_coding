@@ -1,20 +1,26 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
+
+int MAX_CHAR_ENCODING_LEN = 64;
 
 typedef struct Entry
 {
     char c;
     int code_length;
-    int binary;
+    uint64_t binary;
     struct Entry **innertable;
 } Entry;
 
-void print_binary(int number, int start, int length)
+void print_binary(uint64_t number, int start, int length)
 {
     if (start < length)
     {
         print_binary(number >> 1, start + 1, length);
         putc((number & 1) ? '1' : '0', stdout);
+    }
+    if(start==0){
+        printf("\n");
     }
 }
 
@@ -56,7 +62,7 @@ char bit_reader(int read_bits, FILE *fp, char *buffer, int *buffer_length)
     return -1;
 }
 
-int add_table_entry(char c, unsigned int binary, int bin_length, Entry *table[])
+int add_table_entry(char c, uint64_t binary, int bin_length, Entry *table[])
 {
     Entry *entry = (Entry *)malloc(sizeof(Entry));
 
@@ -64,7 +70,7 @@ int add_table_entry(char c, unsigned int binary, int bin_length, Entry *table[])
     entry->code_length = bin_length;
     entry->binary = binary;
 
-    unsigned char lower = binary >> 24;
+    unsigned char lower = binary >> (MAX_CHAR_ENCODING_LEN - 8);
     unsigned char upper = lower | (0b11111111 >> bin_length);
 
     // printf("range(%d-%d)", lower, upper);
@@ -138,8 +144,10 @@ int main(int argc, char **argv)
         int bin_length = 0;
         char binary_stream;
 
+    
         // Read in one encoding mapping
-        unsigned int binary = 0;
+        // This datatype must hold MAX_CHAR_ENCODING_LEN bits
+        uint64_t binary = 0;
         while (1)
         {
             binary_stream = fgetc(input_file);
@@ -152,7 +160,7 @@ int main(int argc, char **argv)
                 break;
             }
             // putc(binary_stream, stdout);
-            binary |= (binary_stream == '1') << (31 - bin_length);
+            binary |= (uint64_t) (binary_stream == '1') << ((MAX_CHAR_ENCODING_LEN - 1) - bin_length);
             bin_length++;
         }
 
