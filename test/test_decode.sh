@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
-cd ..
-make
-cd test
-cp ../encode encode.out
+gcc ../encode.c -o encode.out
 gcc ../decode.c -o decode.out
 
 for i in {1..5}
 do
-    ./encode.out infiles/test$i.txt
+    ./encode.out infiles/test$i.txt > huffman_encoding_out.txt
     DIFF=$(./decode.out huffman_encoding_out.txt | diff ./infiles/test$i.txt -)
     if [ "$DIFF" != "" ] 
     then

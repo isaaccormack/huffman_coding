@@ -1,7 +1,75 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "encode.h"
-#include "tests.h"
+
+#define MAX_BUFFER_SIZE 1024
+#define CHARSET_SIZE 256
+
+typedef struct Node
+{
+    struct Node *left;
+    struct Node *right;
+    int count;
+    char c;
+} Node;
+
+// to generate output for test_char_count.sh
+void test_char_count(int char_count[])
+{
+    int i = 0;
+    int total = 0;
+    int unique = 0;
+    while (i < CHARSET_SIZE)
+    {
+        if (char_count[i] != 0)
+        {
+            unique++;
+            total += char_count[i];
+            if (i == 10)
+            { // special case to escape line feed into correct format
+                printf("Code: %5d 0x%X 'LF' Count: %d\n", i, i, char_count[i]);
+            }
+            else if (i == 26)
+            { // special case to escape EOF into correct format
+                printf("Code: %5d 0x%X 'EOF' Count: %d\n", i, i, char_count[i]);
+            }
+            else
+            {
+                printf("Code: %5d 0x%X '%c' Count: %d\n", i, i, (char)i, char_count[i]);
+            }
+        }
+        i++;
+    }
+    printf("-----TOTAL UNIQUE: %d\n", unique);
+    printf("-----TOTAL CHARACTERS: %d\n", total);
+}
+
+// to generate output for test_encoding_map.sh
+void test_encoding_map(char *encoding[])
+{
+    int i = 0;
+    int unique = 0;
+    while (i < CHARSET_SIZE)
+    {
+        if (encoding[i] != 0)
+        {
+            unique++;
+            if (i == 10)
+            { // special case to escape line feed into correct format
+                printf("Code: %5d 0x%X 'LF' Encoding: %s\n", i, i, encoding[i]);
+            }
+            else if (i == 26)
+            { // special case to escape EOF into correct format
+                printf("Code: %5d 0x%X 'EOF' Encoding: %s\n", i, i, encoding[i]);
+            }
+            else
+            {
+                printf("Code: %5d 0x%X '%c' Encoding: %s\n", i, i, (char)i, encoding[i]);
+            }
+        }
+        i++;
+    }
+    printf("-----TOTAL UNIQUE: %d\n", unique);
+}
 
 // add node to end of priority queue
 void enqueue(Node *queue[], int *queue_length, Node *node)
@@ -138,11 +206,17 @@ void get_encoding_map(Node *node, int bit_array[], int array_len, char *encoding
 void print_huffman_encoding(char* f_name, char *encoding[]) {
 
     // begin huffman message with character encodings
-    for (int i = 0; i < CHARSET_SIZE; i++)
+    int i;
+    int space_printed = 0;
+    for (i = 0; i < CHARSET_SIZE; i++)
     {
         if (encoding[i] != 0)
         {
-            printf("%c%s ", i, encoding[i]);
+            if (space_printed != 0) {
+                printf(" ");
+            }
+            space_printed = 1;
+            printf("%c%s", i, encoding[i]);
         }
     }
 
@@ -170,7 +244,8 @@ void print_huffman_encoding(char* f_name, char *encoding[]) {
 
         char *e = encoding[c];
 
-        for (int i = 0; e[i] != '\0'; i++)
+        int i;
+        for (i = 0; e[i] != '\0'; i++)
         {
             if (e[i] == '1')
             {
@@ -235,7 +310,7 @@ int main(int argc, char **argv)
 
     int char_count[CHARSET_SIZE] = {0}; // [(int)char] = char count
     get_char_count(f_name, char_count);
-    // test_char_count(char_count); // uncomment to test char count
+    test_char_count(char_count); // uncomment to test char count
 
     Node *root;
     make_huffman_tree(&root, char_count);
@@ -245,5 +320,6 @@ int main(int argc, char **argv)
     get_encoding_map(root, bit_array, 0, encoding);
     // test_encoding_map(encoding); // uncomment to test encoding map
 
-    print_huffman_encoding(f_name, encoding); // uncomment to print the huffman code
+    // print_huffman_encoding(f_name, encoding); // uncomment to print the huffman code
 }
+
