@@ -315,7 +315,7 @@ int main(int argc, char **argv)
 
     int char_count[CHARSET_SIZE] = {0}; // [(int)char] = char count
     get_char_count(f_name, char_count);
-    // test_char_count(char_count); // uncomment to test char count
+    test_char_count(char_count); // uncomment to test char count
 
     Node *root;
     make_huffman_tree(&root, char_count);
@@ -326,6 +326,6 @@ int main(int argc, char **argv)
 
     // test_encoding_map(encoding); // uncomment to test encoding map
 
-    print_huffman_encoding(f_name, encoding); // uncomment to print the huffman code
+    // print_huffman_encoding(f_name, encoding); // uncomment to print the huffman code
 }
 
