@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #define MAX_BUFFER_SIZE 1024
-#define CHARSET_SIZE 256
+#define CHARSET_SIZE 128
 
 typedef struct Node
 {
@@ -120,6 +120,11 @@ void get_char_count(char* f_name, int* char_count) {
 
     while (!feof(fp))
     {
+        if (c < 0 || c > 127) {
+            fprintf(stderr, "ERROR: Non-ASCII character encountered. Exiting...\n");
+            fclose(fp);
+            exit(1);
+        }
         char_count[c]++;
         c = fgetc(fp);
     }
@@ -302,7 +307,7 @@ int main(int argc, char **argv)
 {
     if (argc != 2)
     {
-        printf("Usage: ./huffman_encoding input_file.txt\n");
+        printf("Usage: ./encode input_file.txt\n");
         exit(1);
     }
 
@@ -310,7 +315,7 @@ int main(int argc, char **argv)
 
     int char_count[CHARSET_SIZE] = {0}; // [(int)char] = char count
     get_char_count(f_name, char_count);
-    test_char_count(char_count); // uncomment to test char count
+    // test_char_count(char_count); // uncomment to test char count
 
     Node *root;
     make_huffman_tree(&root, char_count);
@@ -318,8 +323,9 @@ int main(int argc, char **argv)
     int bit_array[CHARSET_SIZE] = {};
     char *encoding[CHARSET_SIZE] = {};
     get_encoding_map(root, bit_array, 0, encoding);
+
     // test_encoding_map(encoding); // uncomment to test encoding map
 
-    // print_huffman_encoding(f_name, encoding); // uncomment to print the huffman code
+    print_huffman_encoding(f_name, encoding); // uncomment to print the huffman code
 }
 
