@@ -112,33 +112,13 @@ int add_table_entry(char c, uint64_t binary, int bin_length, Entry *table[])
     return 0;
 }
 
-int main(int argc, char **argv)
-{
-    // Read input ---
-    if (argc != 2)
-    {
-        printf("Usage: ./decode <file1.txt> <file2.txt> ...\n");
-        exit(1);
-    }
-
-    char *f_name = argv[1];
-    FILE *input_file = fopen(f_name, "rb");
-    if (input_file == NULL)
-    {
-        fprintf(stderr, "Can't open %s. Exiting...\n", f_name);
-        exit(1);
-    }
-
+void build_lookup_table(Entry **root_table, FILE *input_file){
     int c = fgetc(input_file);
     if (feof(input_file))
     {
         fprintf(stderr, "File is empty. Exiting...\n");
         exit(1);
     }
-
-    Entry *root_table[256] = {0};
-
-    // Build lookup table ---
     while (!feof(input_file))
     {
         int bin_length = 0;
@@ -176,9 +156,9 @@ int main(int argc, char **argv)
         // Read next char
         c = fgetc(input_file);
     }
+}
 
-    // Decode stream ---
-    int i = 0;
+void decode_stream(Entry **root_table, FILE *input_file){
     char bit_buffer = 0;
     int buffer_length = 0;
     int neededbits = 8;
@@ -214,7 +194,28 @@ int main(int argc, char **argv)
 
         // Erase used bits
         buffer = buffer << neededbits;
-        i++;
     }
+}
+
+int main(int argc, char **argv)
+{
+    // Read input ---
+    if (argc != 2)
+    {
+        printf("Usage: ./decode <file1.txt> <file2.txt> ...\n");
+        exit(1);
+    }
+
+    char *f_name = argv[1];
+    FILE *input_file = fopen(f_name, "rb");
+    if (input_file == NULL)
+    {
+        fprintf(stderr, "Can't open %s. Exiting...\n", f_name);
+        exit(1);
+    }
+
+    Entry *root_table[256] = {0};
+    build_lookup_table(root_table, input_file);
+    decode_stream(root_table, input_file);
     fclose(input_file);
 }

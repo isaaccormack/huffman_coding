@@ -2,11 +2,11 @@ Flat profile:
 
 Each sample counts as 0.01 seconds.
   %   cumulative   self              self     total           
- time   seconds   seconds    calls  ns/call  ns/call  name    
- 49.09      0.25     0.25                             main
- 49.09      0.50     0.25  1019799   245.50   245.50  bit_reader
-  1.96      0.51     0.01                             print_binary
-  0.00      0.51     0.00       77     0.00     0.00  add_table_entry
+ time   seconds   seconds    calls  ms/call  ms/call  name    
+ 57.14      0.04     0.04        1    40.00    70.00  decode_stream
+ 42.86      0.07     0.03   551192     0.00     0.00  bit_reader
+  0.00      0.07     0.00       77     0.00     0.00  add_table_entry
+  0.00      0.07     0.00        1     0.00     0.00  build_lookup_table
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -38,26 +38,29 @@ name       the name of the function.  This is the minor sort
 		     Call graph (explanation follows)
 
 
-granularity: each sample hit covers 2 byte(s) for 1.96% of 0.51 seconds
+granularity: each sample hit covers 4 byte(s) for 14.29% of 0.07 seconds
 
 index % time    self  children    called     name
-                                                 <spontaneous>
-[1]     98.0    0.25    0.25                 main [1]
-                0.25    0.00 1019799/1019799     bit_reader [2]
-                0.00    0.00      77/77          add_table_entry [4]
------------------------------------------------
-                              551192             bit_reader [2]
-                0.25    0.00 1019799/1019799     main [1]
-[2]     49.0    0.25    0.00 1019799+551192  bit_reader [2]
-                              551192             bit_reader [2]
+                0.04    0.03       1/1           main [2]
+[1]    100.0    0.04    0.03       1         decode_stream [1]
+                0.03    0.00  551192/551192      bit_reader [3]
 -----------------------------------------------
                                                  <spontaneous>
-[3]      2.0    0.01    0.00                 print_binary [3]
+[2]    100.0    0.00    0.07                 main [2]
+                0.04    0.03       1/1           decode_stream [1]
+                0.00    0.00       1/1           build_lookup_table [5]
+-----------------------------------------------
+                0.03    0.00  551192/551192      decode_stream [1]
+[3]     42.9    0.03    0.00  551192         bit_reader [3]
 -----------------------------------------------
                                   60             add_table_entry [4]
-                0.00    0.00      77/77          main [1]
+                0.00    0.00      77/77          build_lookup_table [5]
 [4]      0.0    0.00    0.00      77+60      add_table_entry [4]
                                   60             add_table_entry [4]
+-----------------------------------------------
+                0.00    0.00       1/1           main [2]
+[5]      0.0    0.00    0.00       1         build_lookup_table [5]
+                0.00    0.00      77/77          add_table_entry [4]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -145,5 +148,5 @@ index % time    self  children    called     name
 
 Index by function name
 
-   [4] add_table_entry         [1] main
-   [2] bit_reader              [3] print_binary
+   [4] add_table_entry         [5] build_lookup_table
+   [3] bit_reader              [1] decode_stream

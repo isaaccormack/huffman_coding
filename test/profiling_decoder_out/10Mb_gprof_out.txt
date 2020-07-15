@@ -2,11 +2,11 @@ Flat profile:
 
 Each sample counts as 0.01 seconds.
   %   cumulative   self              self     total           
- time   seconds   seconds    calls  ms/call  ms/call  name    
- 86.32      0.94     0.94        1   940.87   940.87  print_huffman_encoding
- 13.77      1.09     0.15        1   150.14   150.14  get_char_count
-  0.00      1.09     0.00        1     0.00     0.00  get_encoding_map
-  0.00      1.09     0.00        1     0.00     0.00  make_huffman_tree
+ time   seconds   seconds    calls   s/call   s/call  name    
+ 58.09      0.79     0.79        1     0.79     1.36  decode_stream
+ 41.91      1.36     0.57  5627376     0.00     0.00  bit_reader
+  0.00      1.36     0.00       88     0.00     0.00  add_table_entry
+  0.00      1.36     0.00        1     0.00     0.00  build_lookup_table
 
  %         the percentage of the total running time of the
 time       program used by this function.
@@ -38,29 +38,29 @@ name       the name of the function.  This is the minor sort
 		     Call graph (explanation follows)
 
 
-granularity: each sample hit covers 2 byte(s) for 0.92% of 1.09 seconds
+granularity: each sample hit covers 4 byte(s) for 0.74% of 1.36 seconds
 
 index % time    self  children    called     name
+                0.79    0.57       1/1           main [2]
+[1]    100.0    0.79    0.57       1         decode_stream [1]
+                0.57    0.00 5627376/5627376     bit_reader [3]
+-----------------------------------------------
                                                  <spontaneous>
-[1]    100.0    0.00    1.09                 main [1]
-                0.94    0.00       1/1           print_huffman_encoding [2]
-                0.15    0.00       1/1           get_char_count [3]
-                0.00    0.00       1/1           make_huffman_tree [5]
-                0.00    0.00       1/1           get_encoding_map [4]
+[2]    100.0    0.00    1.36                 main [2]
+                0.79    0.57       1/1           decode_stream [1]
+                0.00    0.00       1/1           build_lookup_table [5]
 -----------------------------------------------
-                0.94    0.00       1/1           main [1]
-[2]     86.2    0.94    0.00       1         print_huffman_encoding [2]
+                0.57    0.00 5627376/5627376     decode_stream [1]
+[3]     41.9    0.57    0.00 5627376         bit_reader [3]
 -----------------------------------------------
-                0.15    0.00       1/1           main [1]
-[3]     13.8    0.15    0.00       1         get_char_count [3]
+                                  79             add_table_entry [4]
+                0.00    0.00      88/88          build_lookup_table [5]
+[4]      0.0    0.00    0.00      88+79      add_table_entry [4]
+                                  79             add_table_entry [4]
 -----------------------------------------------
-                                   4             get_encoding_map [4]
-                0.00    0.00       1/1           main [1]
-[4]      0.0    0.00    0.00       1+4       get_encoding_map [4]
-                                   4             get_encoding_map [4]
------------------------------------------------
-                0.00    0.00       1/1           main [1]
-[5]      0.0    0.00    0.00       1         make_huffman_tree [5]
+                0.00    0.00       1/1           main [2]
+[5]      0.0    0.00    0.00       1         build_lookup_table [5]
+                0.00    0.00      88/88          add_table_entry [4]
 -----------------------------------------------
 
  This table describes the call tree of the program, and was sorted by
@@ -148,5 +148,5 @@ index % time    self  children    called     name
 
 Index by function name
 
-   [3] get_char_count          [5] make_huffman_tree
-   [4] get_encoding_map        [2] print_huffman_encoding
+   [4] add_table_entry         [5] build_lookup_table
+   [3] bit_reader              [1] decode_stream
