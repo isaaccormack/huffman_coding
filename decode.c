@@ -115,15 +115,13 @@ void decode_stream(Entry **root_table, FILE *input_file){
     register int file_buffer_length = 0;
     register int neededbits = 8;
     register unsigned char buffer = 0;
-    register int shift;
     Entry **table = root_table;
     while (1)
     {
         // fill buffer from file
         while(neededbits > 0){
-            shift = 8 - neededbits;
             // Read bits from file buffer
-            buffer |= (file_buffer >> shift) & (0b11111111 >> shift);
+            buffer |= file_buffer >> (8 - neededbits);
 
             if (neededbits <= file_buffer_length)
             {
@@ -153,7 +151,7 @@ void decode_stream(Entry **root_table, FILE *input_file){
             // Get code length from lookup table entry
             neededbits = table[buffer]->code_length;
             // print the character associated with the encoding
-            printf("%c", table[buffer]->c);
+            putc(table[buffer]->c,stdout);
             table = root_table;
         }
         // If there is a nested table, then set the nested table and retrieve 8 more bits
