@@ -24,40 +24,6 @@ void print_binary(uint64_t number, int start, int length)
     }
 }
 
-// This function oututs a number of bits equal to read_bits.
-char bit_reader(int read_bits, FILE *fp, char *buffer, int *buffer_length)
-{
-    if (read_bits > 8)
-    {
-        fprintf(stderr, "Read bits should never be greater than 8!\n");
-        exit(1);
-    }
-    register char output = 0;
-    register int shift = 8 - read_bits;
-    if (read_bits <= *buffer_length)
-    {
-        // Read bits from buffer
-        output = (*buffer >> shift) & (0b11111111 >> shift);
-
-        // Remove read bits from buffer
-        *buffer = *buffer << (read_bits);
-        *buffer_length -= read_bits;
-
-        return output;
-    }
-    
-    // Read remaining bits
-    output = (*buffer >> shift) & (0b11111111 >> shift);
-    read_bits -= *buffer_length;
-
-    // Refresh buffer
-    *buffer = fgetc(fp);
-    *buffer_length = 8;
-
-    // Read remaining necssary bits
-    return output | bit_reader(read_bits, fp, buffer, buffer_length);
-}
-
 int add_table_entry(char c, uint64_t binary, int bin_length, Entry *table[])
 {
     Entry *entry = (Entry *)malloc(sizeof(Entry));
@@ -152,6 +118,40 @@ void build_lookup_table(Entry **root_table, FILE *input_file){
         // Read next char
         c = fgetc(input_file);
     }
+}
+
+// This function oututs a number of bits equal to read_bits.
+char bit_reader(int read_bits, FILE *fp, char *buffer, int *buffer_length)
+{
+    if (read_bits > 8)
+    {
+        fprintf(stderr, "Read bits should never be greater than 8!\n");
+        exit(1);
+    }
+    register char output = 0;
+    register int shift = 8 - read_bits;
+    if (read_bits <= *buffer_length)
+    {
+        // Read bits from buffer
+        output = (*buffer >> shift) & (0b11111111 >> shift);
+
+        // Remove read bits from buffer
+        *buffer = *buffer << (read_bits);
+        *buffer_length -= read_bits;
+
+        return output;
+    }
+    
+    // Read remaining bits
+    output = (*buffer >> shift) & (0b11111111 >> shift);
+    read_bits -= *buffer_length;
+
+    // Refresh buffer
+    *buffer = fgetc(fp);
+    *buffer_length = 8;
+
+    // Read remaining necssary bits
+    return output | bit_reader(read_bits, fp, buffer, buffer_length);
 }
 
 void decode_stream(Entry **root_table, FILE *input_file){
