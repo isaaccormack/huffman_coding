@@ -8,7 +8,6 @@ typedef struct Entry
 {
     char c;
     int code_length;
-    uint64_t binary;
     struct Entry **innertable;
 } Entry;
 
@@ -30,23 +29,18 @@ int add_table_entry(char c, uint64_t binary, int bin_length, Entry *table[])
 
     entry->c = c;
     entry->code_length = bin_length;
-    entry->binary = binary;
 
     unsigned char lower = binary >> (MAX_CHAR_ENCODING_LEN - 8);
     unsigned char upper = lower | (0b11111111 >> bin_length);
 
     // printf("range(%d-%d)", lower, upper);
-    int i;
+    register int i;
     for (i = lower; i <= upper; i++)
     {
         // If encoding length is <= 8, add entries
         if (bin_length <= 8)
         {
-            if (table[i] == NULL)
-            {
-                table[i] = entry;
-            }
-            else if (table[i]->code_length < entry->code_length)
+            if (table[i] == NULL || table[i]->code_length < entry->code_length)
             {
                 table[i] = entry;
             }
@@ -55,7 +49,7 @@ int add_table_entry(char c, uint64_t binary, int bin_length, Entry *table[])
         else
         {
             // printf("entr_inner ");
-            if (table[i] == NULL || table[i]->innertable == NULL)
+            if (table[i] == NULL)
             {
                 // If there's no existing inner table, create one and fill.
                 Entry **inner_table = (Entry **)malloc(256 * sizeof(Entry *));
@@ -93,11 +87,7 @@ void build_lookup_table(Entry **root_table, FILE *input_file){
         while (1)
         {
             binary_stream = fgetc(input_file);
-            if (binary_stream == '\n')
-            {
-                break;
-            }
-            if (binary_stream == ' ')
+            if (binary_stream == '\n' || binary_stream == ' ')
             {
                 break;
             }
