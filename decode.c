@@ -120,51 +120,37 @@ void build_lookup_table(Entry **root_table, FILE *input_file){
     }
 }
 
-// This function oututs a number of bits equal to read_bits.
-char bit_reader(int read_bits, FILE *fp, char *buffer, int *buffer_length)
-{
-    if (read_bits > 8)
-    {
-        fprintf(stderr, "Read bits should never be greater than 8!\n");
-        exit(1);
-    }
-    register char output = 0;
-    register int shift = 8 - read_bits;
-    if (read_bits <= *buffer_length)
-    {
-        // Read bits from buffer
-        output = (*buffer >> shift) & (0b11111111 >> shift);
-
-        // Remove read bits from buffer
-        *buffer = *buffer << (read_bits);
-        *buffer_length -= read_bits;
-
-        return output;
-    }
-    
-    // Read remaining bits
-    output = (*buffer >> shift) & (0b11111111 >> shift);
-    read_bits -= *buffer_length;
-
-    // Refresh buffer
-    *buffer = fgetc(fp);
-    *buffer_length = 8;
-
-    // Read remaining necssary bits
-    return output | bit_reader(read_bits, fp, buffer, buffer_length);
-}
-
 void decode_stream(Entry **root_table, FILE *input_file){
-    char bit_buffer = 0;
-    int buffer_length = 0;
+    register unsigned char file_buffer = 0;
+    register int file_buffer_length = 0;
     register int neededbits = 8;
     register unsigned char buffer = 0;
+    register int shift;
     Entry **table = root_table;
-    while (!feof(input_file))
+    while (1)
     {
-        // fill buffer from file with
-        buffer |= bit_reader(neededbits, input_file, &bit_buffer, &buffer_length);
+        // fill buffer from file
+        while(neededbits > 0){
+            shift = 8 - neededbits;
+            // Read bits from file buffer
+            buffer |= (file_buffer >> shift) & (0b11111111 >> shift);
 
+            if (neededbits <= file_buffer_length)
+            {
+                // Remove used bits from file buffer
+                file_buffer = file_buffer << (neededbits);
+                file_buffer_length -= neededbits;
+                neededbits = 0;
+            } else {
+                // If file buffer is too short, refill file buffer
+
+                neededbits -= file_buffer_length;
+
+                // Refresh file buffer
+                file_buffer = fgetc(input_file);
+                file_buffer_length = 8;
+            }
+        }
 
         // If there is no nested table, then print a character is associated with the encoding
         if (table[buffer]->innertable == NULL)
