@@ -119,25 +119,25 @@ void decode_stream(Entry **root_table, FILE *input_file){
     while (1)
     {
         // fill buffer from file
-        while(neededbits > 0){
-            // Read bits from file buffer
+        buffer |= file_buffer >> (8 - neededbits);
+
+        if (neededbits <= file_buffer_length)
+        {
+            // Remove used bits from file buffer
+            file_buffer = file_buffer << (neededbits);
+            file_buffer_length -= neededbits;
+        } else {
+            // If file buffer is too short, refill file buffer
+            neededbits -= file_buffer_length;
+
+            // Refresh file buffer
+            file_buffer = fgetc(input_file);
+            file_buffer_length = 8;
+
+            // Read in remaining needed bits
             buffer |= file_buffer >> (8 - neededbits);
-
-            if (neededbits <= file_buffer_length)
-            {
-                // Remove used bits from file buffer
-                file_buffer = file_buffer << (neededbits);
-                file_buffer_length -= neededbits;
-                neededbits = 0;
-            } else {
-                // If file buffer is too short, refill file buffer
-
-                neededbits -= file_buffer_length;
-
-                // Refresh file buffer
-                file_buffer = fgetc(input_file);
-                file_buffer_length = 8;
-            }
+            file_buffer = file_buffer << (neededbits);
+            file_buffer_length -= neededbits;
         }
 
         // If there is no nested table, then print a character is associated with the encoding
