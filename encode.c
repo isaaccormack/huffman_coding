@@ -39,7 +39,7 @@ void test_char_count(int char_count[])
         }
         i++;
     }
-    printf("-----TOTAL UNIQUE: %d\n", unique);
+    // printf("-----TOTAL UNIQUE: %d\n", unique);
     printf("-----TOTAL CHARACTERS: %d\n", total);
 }
 
@@ -307,11 +307,11 @@ int main(int argc, char **argv)
 {
     if (argc != 2)
     {
-        printf("Usage: ./encode input_file.txt\n");
+        printf("Usage: ./encode <input_file.txt>\n");
         exit(1);
     }
 
-    char *f_name = argv[1];
+    char* f_name = argv[1];
 
     int char_count[CHARSET_SIZE] = {0}; // [(int)char] = char count
     get_char_count(f_name, char_count);

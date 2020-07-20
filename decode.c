@@ -199,10 +199,9 @@ void decode_stream(Entry **root_table, FILE *input_file){
 
 int main(int argc, char **argv)
 {
-    // Read input ---
     if (argc != 2)
     {
-        printf("Usage: ./decode <file1.txt> <file2.txt> ...\n");
+        printf("Usage: ./decode <input_file.txt>\n");
         exit(1);
     }
 
