@@ -8,7 +8,6 @@ typedef struct Entry
 {
     char c;
     int code_length;
-    uint64_t binary;
     struct Entry **innertable;
 } Entry;
 
@@ -24,67 +23,24 @@ void print_binary(uint64_t number, int start, int length)
     }
 }
 
-// This function oututs a number of bits equal to read_bits.
-char bit_reader(int read_bits, FILE *fp, char *buffer, int *buffer_length)
-{
-    if (read_bits > 8)
-    {
-        fprintf(stderr, "problem!\n");
-        return -1;
-    }
-    char output = 0;
-    if (read_bits <= *buffer_length)
-    {
-        // Read bits from buffer
-        output = (*buffer >> (8 - read_bits)) & (0b11111111 >> (8 - read_bits));
-
-        // Remove read bits from buffer
-        *buffer = *buffer << (read_bits);
-        *buffer_length -= read_bits;
-
-        return output;
-    }
-    else if (read_bits > *buffer_length)
-    {
-        // Read remaining bits
-        output = (*buffer >> (8 - read_bits)) & (0b11111111 >> (8 - read_bits));
-        int outlength = *buffer_length;
-
-        // Refresh buffer
-        *buffer = fgetc(fp);
-        *buffer_length = 8;
-
-        // Read remaining necssary bits
-        output = output | bit_reader(read_bits - outlength, fp, buffer, buffer_length);
-        return output;
-    }
-    fprintf(stderr, "err\n");
-    return -1;
-}
-
 int add_table_entry(char c, uint64_t binary, int bin_length, Entry *table[])
 {
     Entry *entry = (Entry *)malloc(sizeof(Entry));
 
     entry->c = c;
     entry->code_length = bin_length;
-    entry->binary = binary;
 
     unsigned char lower = binary >> (MAX_CHAR_ENCODING_LEN - 8);
     unsigned char upper = lower | (0b11111111 >> bin_length);
 
     // printf("range(%d-%d)", lower, upper);
-    int i;
+    register int i;
     for (i = lower; i <= upper; i++)
     {
         // If encoding length is <= 8, add entries
         if (bin_length <= 8)
         {
-            if (table[i] == NULL)
-            {
-                table[i] = entry;
-            }
-            else if (table[i]->code_length < entry->code_length)
+            if (table[i] == NULL || table[i]->code_length < entry->code_length)
             {
                 table[i] = entry;
             }
@@ -93,7 +49,7 @@ int add_table_entry(char c, uint64_t binary, int bin_length, Entry *table[])
         else
         {
             // printf("entr_inner ");
-            if (table[i] == NULL || table[i]->innertable == NULL)
+            if (table[i] == NULL)
             {
                 // If there's no existing inner table, create one and fill.
                 Entry **inner_table = (Entry **)malloc(256 * sizeof(Entry *));
@@ -131,11 +87,7 @@ void build_lookup_table(Entry **root_table, FILE *input_file){
         while (1)
         {
             binary_stream = fgetc(input_file);
-            if (binary_stream == '\n')
-            {
-                break;
-            }
-            if (binary_stream == ' ')
+            if (binary_stream == '\n' || binary_stream == ' ')
             {
                 break;
             }
@@ -159,18 +111,34 @@ void build_lookup_table(Entry **root_table, FILE *input_file){
 }
 
 void decode_stream(Entry **root_table, FILE *input_file){
-    char bit_buffer = 0;
-    int buffer_length = 0;
-    int neededbits = 8;
-    unsigned char buffer = 0;
+    register unsigned char file_buffer = 0;
+    register int file_buffer_length = 0;
+    register int neededbits = 8;
+    register unsigned char buffer = 0;
     Entry **table = root_table;
-    while (!feof(input_file))
+    while (1)
     {
-        // fill buffer from file with
-        buffer |= bit_reader(neededbits, input_file, &bit_buffer, &buffer_length);
+        // fill buffer from file
+        buffer |= file_buffer >> (8 - neededbits);
 
-        // Get code length from lookup table entry
-        neededbits = table[buffer]->code_length;
+        if (neededbits <= file_buffer_length)
+        {
+            // Remove used bits from file buffer
+            file_buffer = file_buffer << (neededbits);
+            file_buffer_length -= neededbits;
+        } else {
+            // If file buffer is too short, refill file buffer
+            neededbits -= file_buffer_length;
+
+            // Refresh file buffer
+            file_buffer = fgetc(input_file);
+            file_buffer_length = 8;
+
+            // Read in remaining needed bits
+            buffer |= file_buffer >> (8 - neededbits);
+            file_buffer = file_buffer << (neededbits);
+            file_buffer_length -= neededbits;
+        }
 
         // If there is no nested table, then print a character is associated with the encoding
         if (table[buffer]->innertable == NULL)
@@ -180,8 +148,10 @@ void decode_stream(Entry **root_table, FILE *input_file){
                 fprintf(stderr, "EOT\n");
                 break;
             }
+            // Get code length from lookup table entry
+            neededbits = table[buffer]->code_length;
             // print the character associated with the encoding
-            printf("%c", table[buffer]->c);
+            putc(table[buffer]->c,stdout);
             table = root_table;
         }
         // If there is a nested table, then set the nested table and retrieve 8 more bits
