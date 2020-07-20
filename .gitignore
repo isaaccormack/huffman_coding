@@ -9,3 +9,4 @@ test/encoding_map_out/*
 !test/encoding_map_out/.gitkeep
 test/huffman_code_out/*
 !test/huffman_code_out/.gitkeep
+test/profiling_infiles/*

@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
-cd ..
-make
-cd test
-cp ../encode a.out
+gcc ../encode.c
 
 # Ensure that test_char_count() is uncommented in encode.c and
 # no text is printed to stdout
