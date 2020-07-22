@@ -7,7 +7,7 @@ int MAX_CHAR_ENCODING_LEN = 64;
 typedef struct Entry
 {
     char c;
-    int code_length;
+    uint8_t code_length;
     struct Entry **innertable;
 } Entry;
 
@@ -23,7 +23,7 @@ void print_binary(uint64_t number, int start, int length)
     }
 }
 
-int add_table_entry(char c, uint64_t binary, int bin_length, Entry *table[])
+int add_table_entry(char c, uint64_t binary, uint8_t bin_length, Entry *table[])
 {
     Entry *entry = (Entry *)malloc(sizeof(Entry));
 
@@ -77,7 +77,7 @@ void build_lookup_table(Entry **root_table, FILE *input_file){
     }
     while (!feof(input_file))
     {
-        int bin_length = 0;
+        uint8_t bin_length = 0;
         char binary_stream;
 
     
