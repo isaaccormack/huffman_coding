@@ -127,12 +127,8 @@ void decode_stream(Entry **root_table, FILE *input_file, Entry ***all_tables){
         // fill buffer from file
         buffer |= file_buffer >> (8 - neededbits);
 
-        if (neededbits <= file_buffer_length)
+        if (neededbits > file_buffer_length)
         {
-            // Remove used bits from file buffer
-            file_buffer = file_buffer << (neededbits);
-            file_buffer_length -= neededbits;
-        } else {
             // If file buffer is too short, refill file buffer
             neededbits -= file_buffer_length;
 
@@ -142,9 +138,11 @@ void decode_stream(Entry **root_table, FILE *input_file, Entry ***all_tables){
 
             // Read in remaining needed bits
             buffer |= file_buffer >> (8 - neededbits);
-            file_buffer = file_buffer << (neededbits);
-            file_buffer_length -= neededbits;
         }
+
+        // Remove used bits from buffer
+        file_buffer = file_buffer << (neededbits);
+        file_buffer_length -= neededbits;
 
         // If there is no nested table, then print a character is associated with the encoding
         entry = all_tables[table_n][buffer];
