@@ -150,14 +150,14 @@ void decode_stream(Entry **root_table, FILE *input_file, Entry ***all_tables){
         // entry = all_tables[table_n][buffer];
         
         // Hardware lookup:
-        register char res[4];
+        register int res;
         __asm__ __volatile__(
-            "hardware_lookup \t %0, %1, %2\n"
+            "hardware_lookup\t%0, %1, %2\n"
             : "=r" (res)
             : "r" (table_n), "r" (buffer)
         );
-        char c = res[1];
-        uint8_t code_length_table_num = res[0];
+        char c = (res >> 8) ;
+        uint8_t code_length_table_num = res;
 
         if (c != 0)
         {
@@ -216,8 +216,10 @@ int main(int argc, char **argv)
             int key = (uint32_t) i << 8 | j;
             // code length, character
             int value = (uint32_t) all_tables[i][j]->code_length_table_num | all_tables[i][j]->c;
+            int success = 0;
             __asm__ __volatile__(
-                "load_lookup \t %0, %1\n"
+                "load_lookup\t%0, %1, %2\n"
+                : "=r" (success)
                 : "r" (key), "r" (value)
             );
         }
