@@ -1,5 +1,5 @@
 # huffman_coding
-ARM processor optimized implementation of Huffman Encoding and Decoding Algorithms for SENG 440.
+Huffman encoding and decoding implementations optimized for the ARM processor for SENG 440.
 
 
 ## Getting Started
